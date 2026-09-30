@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>5-2-1 사회 역사 퀴즈 & 무한의 계단 (부스터 에디션)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #ff6b4a;
+    --primary-dark: #d94b2a;
+    --accent: #ffc93c;
+    --sky-blue: #4dabf7;
+    --grass-green: #51cf66;
+    --night: #1a1a2e;
+  }
+
+  * {
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #0b0f19;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  #game-app {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    height: 100vh;
+    max-height: 880px;
+    background: #fff;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* 상단 상태 바 */
+  .top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 58px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    z-index: 50;
+    font-family: 'Jua', sans-serif;
+  }
+  .stage-badge {
+    background: #ff6b4a;
+    color: #fff;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 14.5px;
+  }
+  .score-badge {
+    background: #f1f3f5;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 15.5px;
+    color: #2b8a3e;
+    font-weight: 700;
+  }
+
+  /* 뷰 컨테이너 */
+  .screen-view {
+    position: absolute;
+    top: 58px;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: none;
+    flex-direction: column;
+    z-index: 10;
+  }
+  .screen-view.active {
+    display: flex;
+  }
+
+  /* 시작 인트로 */
+  #intro-view {
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(135deg, #fff3bf 0%, #ffd8a8 100%);
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 24px;
+  }
+  #intro-view h1 {
+    font-family: 'Jua', sans-serif;
+    font-size: 30px;
+    color: #d9480f;
+    margin-bottom: 6px;
+    text-shadow: 2px 2px 0px #fff;
+  }
+  #intro-view h2 {
+    font-family: 'Jua', sans-serif;
+    font-size: 17px;
+    color: #495057;
+    margin-bottom: 20px;
+  }
+  .guide-box {
+    background: white;
+    border-radius: 18px;
+    padding: 16px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    margin-bottom: 22px;
+    text-align: left;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: #343a40;
+  }
+  .start-btn {
+    width: 85%;
+    max-width: 290px;
+    padding: 15px;
+    font-family: 'Jua', sans-serif;
+    font-size: 22px;
+    background: #ff6b4a;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    box-shadow: 0 6px #c92a2a;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .start-btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px #c92a2a;
+  }
+
+  /* 퀴즈 뷰 */
+  #quiz-view {
+    background: #f8f9fa;
+    padding: 16px;
+    overflow-y: auto;
+    justify-content: flex-start;
+  }
+  .quiz-card {
+    background: white;
+    border-radius: 20px;
+    padding: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    margin-bottom: 12px;
+    border-top: 5px solid #ff6b4a;
+  }
+  .question-tag {
+    display: inline-block;
+    font-family: 'Jua', sans-serif;
+    color: #ff6b4a;
+    font-size: 13.5px;
+    margin-bottom: 4px;
+  }
+  .question-text {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.45;
+    color: #212529;
+    margin-bottom: 12px;
+  }
+  .relic-display-box {
+    width: 100%;
+    height: 135px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f1f3f5;
+    border-radius: 14px;
+    margin-bottom: 12px;
+    padding: 8px;
+    border: 1px solid #dee2e6;
+  }
+  .relic-img {
+    max-width: 100%;
+    max-height: 120px;
+    object-fit: contain;
+    border-radius: 8px;
+    filter: drop-shadow(0 3px 6px rgba(0,0,0,0.2));
+  }
+  .options-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .option-btn {
+    padding: 12px 14px;
+    font-size: 14.5px;
+    font-weight: 600;
+    text-align: left;
+    border-radius: 12px;
+    border: 2px solid #dee2e6;
+    background: white;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .option-btn:hover {
+    border-color: #ff6b4a;
+    background: #fff5f5;
+  }
+  .option-btn:active {
+    transform: scale(0.98);
+  }
+
+  /* 오답 팝업 (7초 락) */
+  #wrong-modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.78);
+    backdrop-filter: blur(5px);
+    z-index: 200;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+  .wrong-card {
+    background: white;
+    border-radius: 22px;
+    padding: 24px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    animation: popIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  }
+  .wrong-title {
+    font-family: 'Jua', sans-serif;
+    color: #e03131;
+    font-size: 25px;
+    margin-bottom: 8px;
+  }
+  .penalty-badge {
+    display: inline-block;
+    background: #ffe3e3;
+    color: #c92a2a;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 4px 12px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+  }
+  .wrong-desc {
+    background: #fff5f5;
+    border-left: 4px solid #fa5252;
+    padding: 14px;
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 16px;
+    color: #495057;
+  }
+  .lock-timer-badge {
+    display: inline-block;
+    font-family: 'Jua', sans-serif;
+    background: #e03131;
+    color: white;
+    padding: 8px 22px;
+    border-radius: 24px;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+  }
+
+  /* 부스터 안내 플로팅 배너 */
+  .booster-banner {
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(90deg, #ff922b, #fa5252);
+    color: #fff;
+    padding: 8px 18px;
+    border-radius: 24px;
+    font-family: 'Jua', sans-serif;
+    font-size: 16px;
+    box-shadow: 0 4px 15px rgba(250, 82, 82, 0.5);
+    z-index: 40;
+    display: none;
+    animation: pulse 0.8s infinite alternate;
+    white-space: nowrap;
+  }
+
+  @keyframes pulse {
+    0% { transform: translateX(-50%) scale(1); }
+    100% { transform: translateX(-50%) scale(1.08); }
+  }
+
+  /* 무한의 계단 게임 화면 */
+  #game-view {
+    position: absolute;
+    top: 58px;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    overflow: hidden;
+    background: #120d09;
+  }
+  #game-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .game-ui-overlay {
+    position: absolute;
+    top: 14px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+    pointer-events: none;
+  }
+  .bonus-timer-bar {
+    width: 72%;
+    height: 18px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid white;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+  .bonus-timer-fill {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #ffc93c, #ff6b4a);
+    transition: width 0.04s linear;
+  }
+  .bonus-timer-fill.booster-active {
+    background: linear-gradient(90deg, #ff922b, #ff0055);
+  }
+  .altitude-indicator {
+    position: absolute;
+    top: 40px;
+    left: 16px;
+    font-family: 'Jua', sans-serif;
+    color: #ffffff;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+    font-size: 18px;
+    pointer-events: none;
+    z-index: 20;
+  }
+
+  /* 조작 버튼 */
+  .stairs-controls {
+    position: absolute;
+    bottom: 22px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-evenly;
+    padding: 0 16px;
+    z-index: 30;
+  }
+  .ctrl-btn {
+    width: 130px;
+    height: 84px;
+    background: rgba(255, 255, 255, 0.92);
+    border: 3px solid #ff6b4a;
+    border-radius: 20px;
+    font-family: 'Jua', sans-serif;
+    font-size: 24px;
+    color: #ff6b4a;
+    box-shadow: 0 6px 0 #d9480f, 0 8px 16px rgba(0,0,0,0.3);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.06s;
+  }
+  .ctrl-btn span {
+    font-size: 12px;
+    color: #868e96;
+    margin-top: 2px;
+  }
+  .ctrl-btn:active {
+    transform: translateY(5px);
+    box-shadow: 0 1px 0 #d9480f, 0 4px 8px rgba(0,0,0,0.2);
+    background: #ff6b4a;
+    color: #fff;
+  }
+  .ctrl-btn:active span {
+    color: #ffe3e3;
+  }
+
+  /* 최종 결과 화면 */
+  #result-view {
+    background: #f8f9fa;
+    padding: 20px;
+    overflow-y: auto;
+    text-align: center;
+  }
+  .result-header {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+  }
+  .result-header h2 {
+    font-family: 'Jua', sans-serif;
+    font-size: 28px;
+    color: #ff6b4a;
+  }
+  .final-score {
+    font-family: 'Jua', sans-serif;
+    font-size: 46px;
+    color: #2b8a3e;
+    margin: 10px 0;
+  }
+  .notes-container {
+    text-align: left;
+  }
+  .notes-title {
+    font-family: 'Jua', sans-serif;
+    font-size: 18px;
+    color: #343a40;
+    margin-bottom: 12px;
+  }
+  .note-item {
+    background: white;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 12px;
+    border-left: 5px solid #ff6b4a;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .note-q {
+    font-weight: 700;
+    font-size: 14px;
+    color: #212529;
+    margin-bottom: 6px;
+  }
+  .note-ans {
+    font-size: 13px;
+    color: #c92a2a;
+    font-weight: 600;
+  }
+  .note-exp {
+    font-size: 13px;
+    color: #495057;
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+
+  @keyframes popIn {
+    0% { transform: scale(0.85); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div id="game-app">
+  <!-- 상단 상태 바 -->
+  <div class="top-bar">
+    <div class="stage-badge" id="quiz-progress-text">Q 1 / 25</div>
+    <div class="score-badge" id="total-stairs-text">👣 0 층 도달</div>
+  </div>
+
+  <!-- 시작 화면 -->
+  <div class="screen-view active" id="intro-view">
+    <h1>📜 역사 퀴즈 & 무한계단!</h1>
+    <h2>구석기 ➔ 신석기 ➔ 청동기 ➔ 고조선</h2>
+    <div class="guide-box">
+      <strong>🎮 핵심 규칙 & 부스터 안내:</strong><br>
+      1. 총 <strong>25문제</strong>의 핵심 유물 퀴즈를 풉니다.<br>
+      2. <strong>정답!</strong> ➔ 기본 <b>5초</b> 동안 무한의 계단 질주!<br>
+      3. <strong>🚀 슈퍼 부스터 가동:</strong> <b>10번, 20번, 25번(마지막)</b> 문제를 맞히면 시간이 <b>15초</b>로 대폭 증가!<br>
+      4. <strong>⚠️ 오답 페널티:</strong> 문제를 틀리면 <b>7초 정지 + 10계단 강등</b>됩니다!<br>
+      5. <strong>지하 ➔ 지상 ➔ 하늘 ➔ 우주</strong>로 끝없이 솟구쳐 보세요!
+    </div>
+    <button class="start-btn" onclick="SoundFX.init(); GameApp.startQuiz();">탐험 출발하기 🚀</button>
+  </div>
+
+  <!-- 퀴즈 뷰 -->
+  <div class="screen-view" id="quiz-view">
+    <div class="quiz-card">
+      <span class="question-tag" id="q-category">시대 분류</span>
+      <h3 class="question-text" id="q-title">문제가 여기에 표시됩니다.</h3>
+      <div class="relic-display-box" id="q-relic-box"></div>
+      <div class="options-grid" id="q-options"></div>
+    </div>
+  </div>
+
+  <!-- 오답 팝업 (7초 락 + 10계단 하락 안내) -->
+  <div id="wrong-modal">
+    <div class="wrong-card">
+      <div class="wrong-title">⚠️ 오답! 핵심 노트를 읽어보세요</div>
+      <div class="penalty-badge">🔻 페널티: 계단 10층 하락!</div>
+      <div class="wrong-desc" id="wrong-explanation">해설 내용</div>
+      <div class="lock-timer-badge" id="lock-countdown">7초 동안 학습 중...</div>
+    </div>
+  </div>
+
+  <!-- 무한의 계단 게임 뷰 -->
+  <div class="screen-view" id="game-view">
+    <div class="game-ui-overlay">
+      <div class="bonus-timer-bar">
+        <div class="bonus-timer-fill" id="timer-bar-fill"></div>
+      </div>
+    </div>
+    <div class="booster-banner" id="booster-banner">🔥 부스터 가동!! 시간이 15초로 늘어났어요! 🔥</div>
+    <div class="altitude-indicator" id="altitude-text">🪨 지하 암벽 동굴 (0m)</div>
+    <canvas id="game-canvas"></canvas>
+    
+    <!-- 조작 버튼 -->
+    <div class="stairs-controls">
+      <button class="ctrl-btn" id="btn-left" ontouchstart="GameApp.stepLeft(event)" onclick="GameApp.stepLeft(event)">
+        ◀ 왼쪽
+        <span>[A / ←]</span>
+      </button>
+      <button class="ctrl-btn" id="btn-right" ontouchstart="GameApp.stepRight(event)" onclick="GameApp.stepRight(event)">
+        오른쪽 ▶
+        <span>[D / →]</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 최종 결과 뷰 -->
+  <div class="screen-view" id="result-view">
+    <div class="result-header">
+      <h2>🎉 전 과정 마스터 완료!</h2>
+      <p style="font-size:14px; color:#868e96; margin-top:4px;">구석기부터 고조선까지 완전 정복</p>
+      <div class="final-score" id="final-stairs-score">0 층</div>
+      <p id="final-quiz-rate" style="font-size:15px; font-weight:700; color:#495057;"></p>
+    </div>
+    <div class="notes-container">
+      <div class="notes-title">📖 오답 및 핵심 복습 노트</div>
+      <div id="notes-list"></div>
+    </div>
+    <button class="start-btn" style="width:100%; margin: 20px 0;" onclick="location.reload()">처음부터 다시 도전 🔄</button>
+  </div>
+</div>
+
+<script>
+/* -------------------------------------------------------------
+ * 1. Web Audio API 신시사이저 사운드
+ * ------------------------------------------------------------- */
+const SoundFX = {
+  ctx: null,
+  init() {
+    if (!this.ctx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      this.ctx = new AudioContext();
+    }
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+  },
+  playJump() {
+    if (!this.ctx) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    const now = this.ctx.currentTime;
+    osc.frequency.setValueAtTime(320, now);
+    osc.frequency.exponentialRampToValueAtTime(640, now + 0.08);
+    gain.gain.setValueAtTime(0.15, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.08);
+  },
+  playFall() {
+    if (!this.ctx) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    const now = this.ctx.currentTime;
+    osc.frequency.setValueAtTime(450, now);
+    osc.frequency.exponentialRampToValueAtTime(100, now + 0.28);
+    gain.gain.setValueAtTime(0.25, now);
+    gain.gain.linearRampToValueAtTime(0.01, now + 0.28);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.28);
+  },
+  playCorrect() {
+    if (!this.ctx) return;
+    const notes = [523.25, 659.25, 783.99, 1046.50];
+    notes.forEach((freq, idx) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      const now = this.ctx.currentTime + idx * 0.07;
+      osc.frequency.setValueAtTime(freq, now);
+      gain.gain.setValueAtTime(0.18, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.2);
+    });
+  },
+  playBooster() {
+    if (!this.ctx) return;
+    const notes = [440, 554.37, 659.25, 880, 1108.73, 1318.51];
+    notes.forEach((freq, idx) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'square';
+      const now = this.ctx.currentTime + idx * 0.06;
+      osc.frequency.setValueAtTime(freq, now);
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.22);
+    });
+  },
+  playWrong() {
+    if (!this.ctx) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'square';
+    const now = this.ctx.currentTime;
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.setValueAtTime(120, now + 0.18);
+    gain.gain.setValueAtTime(0.25, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.4);
+  }
+};
+
+/* -------------------------------------------------------------
+ * 2. 첨부 교과서 실제 유물 사진 데이터 (힌트 글씨 제거 버전)
+ * ------------------------------------------------------------- */
+const RelicData = {
+  handaxe: {
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Handaxe._Jeongok_ri._Gyeonggi_do._National_Museum_of_Korea.jpg/400px-Handaxe._Jeongok_ri._Gyeonggi_do._National_Museum_of_Korea.jpg",
+    svg: `<svg viewBox="0 0 100 100" width="90" height="90"><path d="M50 10 C35 30 20 60 25 80 C28 92 72 92 75 80 C80 60 65 30 50 10 Z" fill="#8c7853"/><polygon points="50,10 40,35 48,20" fill="#a48d64"/></svg>`
+  },
+  combPot: {
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/KoreanEarthenwareJar4000BCEAmsa-DongNearSeoul.jpg/400px-KoreanEarthenwareJar4000BCEAmsa-DongNearSeoul.jpg",
+    svg: `<svg viewBox="0 0 100 100" width="90" height="90"><path d="M22 25 L78 25 L65 85 L50 95 L35 85 Z" fill="#b06c49"/></svg>`
+  },
+  spindleWhorl: {
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Spindle_whorl.jpg/400px-Spindle_whorl.jpg",
+    svg: `<svg viewBox="0 0 100 100" width="90" height="90"><ellipse cx="50" cy="55" rx="38" ry="25" fill="#a26f4f"/><circle cx="50" cy="50" r="6" fill="#333"/></svg>`
+  },
+  semilunarKnife: {
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Semi-lunar_stone_knife.jpg/400px-Semi-lunar_stone_knife.jpg",
+    svg: `<svg viewBox="0 0 100 100" width="90" height="90"><path d="M15 50 Q50 30 85 50 Q75 75 15 50 Z" fill="#9e978e"/><circle cx="42" cy="49" r="3.5" fill="#2d2b28"/><circle cx="58" cy="49" r="3.5" fill="#2d2b28"/></svg>`
+  },
+  dolmen: {
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Dolmen_at_Ganghwa_Island.jpg/500px-Dolmen_at_Ganghwa_Island.jpg",
+    svg: `<svg viewBox="0 0 100 100" width="90" height="90"><path d="M30 46 L27 82 L38 82 L42 48 Z" fill="#7b7e82"/><path d="M70 46 L73 82 L62 82 L58 48 Z" fill="#8d9094"/><path d="M12 44 Q50 32 88 42 Q86 52 78 52 Q50 48 18 52 Z" fill="#a4a7ab"/></svg>`
+  },
+  luteSword: {
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Liaoning-type_bronze_dagger.National_Museum_of_Korea.jpg/300px-Liaoning-type_bronze_dagger.National_Museum_of_Korea.jpg",
+    svg: `<svg viewBox="0 0 100 100" width="90" height="90"><path d="M50 8 L53 30 Q63 45 57 58 Q65 72 53 78 L53 92 L47 92 L47 78 Q35 72 43 58 Q37 45 47 30 Z" fill="#4d9075"/></svg>`
+  },
+  bronzeBell: {
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Bronze_Eight-branched_Bell.jpg/400px-Bronze_Eight-branched_Bell.jpg",
+    svg: `<svg viewBox="0 0 100 100" width="90" height="90"><circle cx="50" cy="50" r="18" fill="#386641"/><circle cx="50" cy="22" r="7" fill="#52b788"/><circle cx="78" cy="50" r="7" fill="#52b788"/><circle cx="50" cy="78" r="7" fill="#52b788"/><circle cx="22" cy="50" r="7" fill="#52b788"/></svg>`
+  },
+  plainPot: {
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Mumun_pottery.jpg/350px-Mumun_pottery.jpg",
+    svg: `<svg viewBox="0 0 100 100" width="90" height="90"><ellipse cx="50" cy="20" rx="18" ry="4" fill="#c49169"/><path d="M32 20 L28 32 Q20 52 35 75 L42 90 L58 90 L65 75 Q80 52 72 32 L68 20" fill="#dbab85"/></svg>`
+  },
+  grindingStone: {
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Quern-stone.jpg/400px-Quern-stone.jpg",
+    svg: `<svg viewBox="0 0 100 100" width="90" height="90"><ellipse cx="50" cy="62" rx="42" ry="18" fill="#8d8d8d"/><ellipse cx="55" cy="48" rx="28" ry="9" fill="#666" transform="rotate(-8 55 48)"/></svg>`
+  },
+  shellMask: {
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Shell_mask_Dongsam-dong.jpg/350px-Shell_mask_Dongsam-dong.jpg",
+    svg: `<svg viewBox="0 0 100 100" width="90" height="90"><path d="M50 15 C25 20 15 50 25 80 C35 90 65 90 75 80 C85 50 75 20 50 15 Z" fill="#faebd7"/><circle cx="40" cy="45" r="4" fill="#333"/><circle cx="60" cy="45" r="4" fill="#333"/><ellipse cx="50" cy="65" rx="6" ry="8" fill="#333"/></svg>`
+  },
+  netSinkers: {
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Net_sinkers_Korea.jpg/400px-Net_sinkers_Korea.jpg",
+    svg: `<svg viewBox="0 0 100 100" width="90" height="90"><ellipse cx="30" cy="50" rx="14" ry="10" fill="#78716c"/><ellipse cx="70" cy="50" rx="14" ry="10" fill="#57534e"/></svg>`
+  }
+};
+
+/* -------------------------------------------------------------
+ * 3. 25개 알찬 역사 퀴즈 데이터
+ * ------------------------------------------------------------- */
+const QuizData = [
+  // 1~6: 구석기
+  {
+    category: "구석기 시대의 도구",
+    title: "돌을 깨뜨려 만든 '뗀석기'로, 사냥과 가죽 벗기기 등에 쓰인 사진 속 대표 도구는?",
+    relic: RelicData.handaxe,
+    options: ["주먹도끼", "반달돌칼", "가락바퀴", "빗살무늬 토기"],
+    answer: 0,
+    explanation: "구석기인들은 돌을 깨뜨려 뗀석기(주먹도끼)를 만들어 사냥과 음식 조리 등에 다양하게 활용했습니다."
+  },
+  {
+    category: "구석기 시대의 의생활",
+    title: "구석기 시대 사람들은 옷을 지어 입기 위해 주로 무엇을 이용했을까요?",
+    relic: null,
+    options: ["목화솜으로 실을 잣아 짠 무명옷", "사냥한 짐승의 가죽이나 풀", "누에고치에서 뽑아낸 비단", "가락바퀴로 짠 마직포"],
+    answer: 1,
+    explanation: "구석기 시대 사람들은 사냥한 짐승의 가죽이나 풀을 엮어 추위를 막는 옷을 만들어 입었습니다."
+  },
+  {
+    category: "구석기 시대의 식생활",
+    title: "구석기 시대 사람들이 음식을 구하던 주된 방법이 아닌 것은?",
+    relic: null,
+    options: ["나무 열매나 풀뿌리 채집", "돌을 던져 짐승 사냥", "논에 벼를 심어 수확", "물고기 잡기"],
+    answer: 2,
+    explanation: "농사는 신석기 시대부터 시작되었으며, 구석기 시대에는 자연에서 열매를 채집하거나 짐승을 사냥했습니다."
+  },
+  {
+    category: "구석기 시대의 주생활",
+    title: "먹을거리를 찾아 이동 생활을 하던 구석기인들이 머물렀던 임시 거처는?",
+    relic: null,
+    options: ["바닷가에 지은 견고한 움집", "동굴, 바위 그늘, 막집", "높은 나무 울타리를 두른 기와집", "돌로 높이 쌓은 성곽"],
+    answer: 1,
+    explanation: "구석기 시대 사람들은 계절과 사냥감을 따라 이동 생활을 하며 동굴이나 바위 그늘, 한데에 막 지은 막집에서 살았습니다."
+  },
+  {
+    category: "구석기 시대의 불 사용",
+    title: "구석기 시대에 사람들이 '불'을 사용하면서 나타난 변화로 바르지 않은 것은?",
+    relic: null,
+    options: ["추위를 이겨낼 수 있었다.", "사나운 짐승의 위협으로부터 몸을 보호했다.", "음식을 익혀 먹어 소화가 잘되었다.", "철로 된 농기구를 불로 녹여 대량 생산했다."],
+    answer: 3,
+    explanation: "불의 발견으로 추위 방어, 맹수 퇴치, 화식(음식 익혀 먹기)이 가능해졌습니다. 철기 제작은 훨씬 훗날의 일입니다."
+  },
+  {
+    category: "구석기 시대의 생활 모습",
+    title: "구석기 시대 사람들의 사회 모습에 대한 설명으로 옳은 것은?",
+    relic: null,
+    options: ["엄격한 신분 계급이 존재했다.", "지배자(군장)가 백성을 다스렸다.", "무리를 이루어 평등하게 생활했다.", "사유 재산의 차이로 빈부 격차가 심했다."],
+    answer: 2,
+    explanation: "구석기 시대에는 먹을거리가 넉넉지 않아 모두가 함께 일하고 똑같이 나누어 먹는 평등한 무리 사회였습니다."
+  },
+
+  // 7~13: 신석기
+  {
+    category: "신석기 시대의 도구",
+    title: "신석기 시대에는 돌을 곱게 갈아 쓰임새에 맞게 도구를 만들었습니다. 이 도구를 무엇이라 부를까요?",
+    relic: null,
+    options: ["뗀석기", "간석기", "청동기", "철기"],
+    answer: 1,
+    explanation: "신석기 시대에는 돌을 정교하게 갈아서 만든 '간석기'를 주로 사용했습니다."
+  },
+  {
+    category: "신석기 시대의 의생활",
+    title: "가운데 구멍에 막대를 꽂아 돌려 실을 뽑아내던 사진 속 신석기 시대 유물은?",
+    relic: RelicData.spindleWhorl,
+    options: ["가락바퀴", "갈돌", "돌괭이", "돌화살촉"],
+    answer: 0,
+    explanation: "신석기 사람들은 가락바퀴를 이용해 실을 뽑고, 뼈바늘을 이용해 옷을 지어 입었습니다."
+  },
+  {
+    category: "신석기 시대의 의생활",
+    title: "가락바퀴로 뽑은 실과 함께 옷이나 그물을 짓는 데 사용한 뼈로 만든 도구는?",
+    relic: null,
+    options: ["뼈작살", "뼈바늘", "뼈낚시", "반달돌칼"],
+    answer: 1,
+    explanation: "가락바퀴와 뼈바늘은 신석기 시대에 원시적인 직조 기술(옷 만들기)이 시작되었음을 보여줍니다."
+  },
+  // 10번 문제 (부스터 이벤트!)
+  {
+    category: "신석기 시대의 장신구 [부스터 찬스!]",
+    title: "신석기인들이 몸을 치장하기 위해 조개껍데기에 구멍을 뚫어 만든 사진 속 유물은?",
+    relic: RelicData.shellMask,
+    options: ["조개 가면 및 장신구", "조개 화폐", "조개 화살촉", "조개 그릇"],
+    answer: 0,
+    explanation: "신석기 사람들은 조개껍데기에 눈, 코, 입 구멍을 뚫어 가면을 만들거나 팔찌 등 장신구를 만들어 몸을 꾸몄습니다."
+  },
+  {
+    category: "신석기 시대의 식생활",
+    title: "곡식의 껍질을 벗기거나 곡식을 가루로 갈아 먹기 위해 사용한 사진 속 도구는?",
+    relic: RelicData.grindingStone,
+    options: ["주먹도끼와 찍개", "갈판과 갈돌", "반달돌칼과 괭이", "돌도끼와 쐐기"],
+    answer: 1,
+    explanation: "넓적한 갈판 위에 곡식이나 도토리를 놓고 갈돌을 앞뒤로 밀어 껍질을 벗기거나 갈아 먹었습니다."
+  },
+  {
+    category: "신석기 시대의 어로 도구",
+    title: "그물 아래쪽에 매달아 그물이 물속에 잘 가라앉도록 만든 사진 속 도구는?",
+    relic: RelicData.netSinkers,
+    options: ["돌괭이", "돌그물추", "돌창", "뒤지개"],
+    answer: 1,
+    explanation: "신석기인들은 돌 양쪽에 홈을 파서 그물 밑에 매다는 '돌그물추'를 만들어 물고기를 효과적으로 잡았습니다."
+  },
+  {
+    category: "신석기 시대의 토기와 주거",
+    title: "음식을 조리·보관한 '빗살무늬 토기'를 쓰고, 강가나 바닷가에 지어 정착한 집은?",
+    relic: RelicData.combPot,
+    options: ["막집", "움집", "기와집", "너와집"],
+    answer: 1,
+    explanation: "신석기 시대에는 바닥을 파고 기둥을 세운 '움집'을 짓고 마을을 이루어 정착 생활을 시작했습니다."
+  },
+
+  // 14~20: 청동기
+  {
+    category: "청동기 시대의 농경",
+    title: "청동기 시대에 처음으로 시작된 농사로, 식생활에 큰 변화를 가져온 것은?",
+    relic: null,
+    options: ["벼농사 시작", "보리 농사 시작", "감자 농사 시작", "옥수수 농사 시작"],
+    answer: 0,
+    explanation: "청동기 시대에는 이전의 밭농사에 더해 본격적으로 '벼농사'가 시작되어 쌀을 생산했습니다."
+  },
+  {
+    category: "청동기 시대의 수확 도구",
+    title: "벼농사가 시작되었지만 청동이 귀해 곡식 이삭을 자를 때 쓴 사진 속 간석기는?",
+    relic: RelicData.semilunarKnife,
+    options: ["주먹도끼", "반달돌칼", "돌화살촉", "가락바퀴"],
+    answer: 1,
+    explanation: "청동기 시대 농기구는 여전히 돌이나 나무로 만들었으며, 벼 이삭을 잘라 수확할 때는 구멍이 뚫린 '반달돌칼'을 썼습니다."
+  },
+  {
+    category: "청동기 시대의 토기",
+    title: "신석기 시대 빗살무늬 토기와 달리, 겉면에 무늬가 없는 청동기 시대 대표 토기는?",
+    relic: RelicData.plainPot,
+    options: ["민무늬 토기", "빗살무늬 토기", "상감청자", "분청사기"],
+    answer: 0,
+    explanation: "청동기 시대에는 겉면에 무늬가 없고 밑바닥이 평평한 '민무늬 토기'를 주로 사용했습니다."
+  },
+  {
+    category: "청동기 시대의 의식 도구",
+    title: "청동기 시대 제사장(지도자)이 하늘에 제사를 지낼 때 흔들어 소리를 내던 도구는?",
+    relic: RelicData.bronzeBell,
+    options: ["청동방울 (팔주령)", "비파형 동검", "청동 거울", "반달돌칼"],
+    answer: 0,
+    explanation: "청동방울(팔주령)은 청동기 시대에 제사장이 제사 의식을 치를 때 사용하던 대표적인 청동 제기입니다."
+  },
+  {
+    category: "청동기 시대의 주거와 마을",
+    title: "청동기 시대 마을 모습에 대한 설명으로 옳은 것은?",
+    relic: null,
+    options: [
+      "먹을거리를 찾아 매달 동굴로 이사를 다녔다.",
+      "마을 주변에 도랑(환호)을 파거나 나무 울타리(목책)를 세워 방어했다.",
+      "바닷가 모래밭 위에 막집을 지었다.",
+      "마을 중심에 거대한 아파트 단지를 건설했다."
+    ],
+    answer: 1,
+    explanation: "부족 간의 전쟁이 잦아지면서 마을을 지키기 위해 마을 둘레에 도랑을 파고 나무 울타리를 세웠습니다."
+  },
+  {
+    category: "청동기 시대의 사회 변화",
+    title: "생산물이 남으면서(잉여 생산물) 청동기 시대 사회에 일어난 큰 변화는?",
+    relic: null,
+    options: [
+      "사람들이 모두 사냥만 하게 되었다.",
+      "개인 재산과 빈부 격차가 생기고 지배자(군장)가 등장했다.",
+      "모든 재산을 똑같이 나누는 완전 평등 사회가 되었다.",
+      "도구를 전혀 쓰지 않고 맨손으로 생활했다."
+    ],
+    answer: 1,
+    explanation: "농업 생산량이 늘어나 개인 재산이 생겼고, 빈부 격차가 나타나면서 권력을 쥔 지배자가 나타났습니다."
+  },
+  // 20번 문제 (부스터 이벤트!)
+  {
+    category: "청동기 시대 고인돌 [부스터 찬스!]",
+    title: "강화 부근리 고인돌처럼 탁자 모양을 한 사진 속 거대한 돌무덤의 종류는?",
+    relic: RelicData.dolmen,
+    options: ["탁자식 고인돌", "바둑판식 고인돌", "개석식 고인돌", "탑식 고인돌"],
+    answer: 0,
+    explanation: "받침돌을 높게 세워 책상(탁자) 모양을 띤 고인돌을 '탁자식 고인돌'이라고 부릅니다."
+  },
+
+  // 21~25: 고조선
+  {
+    category: "고조선의 건국",
+    title: "청동기 문화를 바탕으로 우리 역사상 최초의 국가를 세운 인물은?",
+    relic: null,
+    options: ["주몽", "단군왕검", "온조", "박혁거세"],
+    answer: 1,
+    explanation: "기원전 2333년 단군왕검이 우리 민족 최초의 국가인 '고조선'을 건국했습니다."
+  },
+  {
+    category: "고조선 건국 기록",
+    title: "고려 시대 승려 일연이 단군왕검의 고조선 건국 이야기를 기록해 전해오는 역사책은?",
+    relic: null,
+    options: ["삼국사기", "삼국유사", "조선왕조실록", "난중일기"],
+    answer: 1,
+    explanation: "고려 후기 승려 일연이 쓴 『삼국유사』에 단군의 고조선 건국 이야기가 기록되어 있습니다."
+  },
+  {
+    category: "고조선의 법률 (8조법)",
+    title: "고조선에서 사람을 죽인 자는 사형에 처했다는 조항을 통해 알 수 있는 사회 모습은?",
+    relic: null,
+    options: ["사람의 생명을 매우 소중히 여겼다.", "철저한 노예 해방 사회였다.", "종교의 자유를 엄격히 보장했다.", "사냥을 금지하는 사회였다."],
+    answer: 0,
+    explanation: "'살인자는 즉시 사형에 처한다'는 법을 통해 사람의 생명과 노동력을 매우 중시했음을 알 수 있습니다."
+  },
+  {
+    category: "고조선의 사회 모습",
+    title: "남의 물건을 훔친 자는 노비로 삼거나 돈 50만 전을 내게 했다는 조항에서 알 수 있는 사실이 아닌 것은?",
+    relic: null,
+    options: ["개인의 사유 재산을 인정했다.", "노비가 존재하는 신분제 사회였다.", "화폐(돈)가 사용되었다.", "모든 사람이 계급 없이 완전히 평등했다."],
+    answer: 3,
+    explanation: "8조법을 통해 개인 재산 인정, 신분제(노비), 화폐 사용 사회였음을 알 수 있으며 평등 사회가 아니었습니다."
+  },
+  // 25번 마지막 문제 (파이널 부스터 이벤트!)
+  {
+    category: "고조선의 문화 범위 [파이널 부스터!]",
+    title: "고조선의 세력 범위를 알려주는 사진 속 비파형 동검과 짝을 이루는 유적은?",
+    relic: RelicData.luteSword,
+    options: [
+      "탁자식 고인돌",
+      "빗살무늬 토기",
+      "가락바퀴",
+      "돌그물추"
+    ],
+    answer: 0,
+    explanation: "비파형 동검과 탁자식 고인돌이 출토되는 분포 지역은 고조선의 문화 범위와 거의 일치합니다."
+  }
+];
+
+/* -------------------------------------------------------------
+ * 4. 메인 앱 컨트롤러 (부스터 15초 & 오답 10계단 강등 관리)
+ * ------------------------------------------------------------- */
+const GameApp = {
+  currentQIdx: 0,
+  totalStairsClimbed: 0,
+  wrongNotes: [],
+  bonusTimer: null,
+
+  startQuiz() {
+    this.currentQIdx = 0;
+    this.totalStairsClimbed = 0;
+    this.wrongNotes = [];
+    document.getElementById('intro-view').classList.remove('active');
+    StairsGame.initWorld();
+    this.showQuiz();
+  },
+
+  showQuiz() {
+    StairsGame.stop();
+    document.getElementById('game-view').classList.remove('active');
+    document.getElementById('wrong-modal').style.display = 'none';
+
+    if (this.currentQIdx >= QuizData.length) {
+      this.showResult();
+      return;
+    }
+
+    const q = QuizData[this.currentQIdx];
+    document.getElementById('quiz-view').classList.add('active');
+
+    document.getElementById('quiz-progress-text').innerText = `문제 ${this.currentQIdx + 1} / ${QuizData.length}`;
+    document.getElementById('total-stairs-text').innerText = `👣 ${this.totalStairsClimbed} 층 도달`;
+    document.getElementById('q-category').innerText = `[${q.category}]`;
+    document.getElementById('q-title').innerText = q.title;
+
+    // 힌트 글씨(스포일러)를 뺀 순수 사진 렌더링
+    const relicBox = document.getElementById('q-relic-box');
+    if (q.relic) {
+      relicBox.style.display = 'flex';
+      relicBox.innerHTML = `
+        <img class="relic-img" src="${q.relic.url}" alt="문제 유물" onerror="this.outerHTML='${q.relic.svg.replace(/"/g, '&quot;')}';">
+      `;
+    } else {
+      relicBox.style.display = 'none';
+      relicBox.innerHTML = '';
+    }
+
+    const optBox = document.getElementById('q-options');
+    optBox.innerHTML = '';
+    q.options.forEach((optText, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.innerText = `${idx + 1}. ${optText}`;
+      btn.onclick = () => this.handleAnswer(idx);
+      optBox.appendChild(btn);
+    });
+  },
+
+  handleAnswer(selectedIdx) {
+    const q = QuizData[this.currentQIdx];
+    const isBoosterQ = (this.currentQIdx === 9 || this.currentQIdx === 19 || this.currentQIdx === 24);
+
+    if (selectedIdx === q.answer) {
+      if (isBoosterQ) {
+        SoundFX.playBooster();
+        this.triggerBonusGame(15000, true); // 부스터 15초
+      } else {
+        SoundFX.playCorrect();
+        this.triggerBonusGame(5000, false); // 일반 5초
+      }
+    } else {
+      SoundFX.playWrong();
+      this.triggerWrongLock(q, selectedIdx);
+    }
+  },
+
+  triggerWrongLock(q, selectedIdx) {
+    // 🔻 오답 페널티: 계단 10층 강등!
+    const dropPenalty = 10;
+    this.totalStairsClimbed = Math.max(0, this.totalStairsClimbed - dropPenalty);
+    StairsGame.playerIdx = Math.max(0, StairsGame.playerIdx - dropPenalty);
+    document.getElementById('total-stairs-text').innerText = `👣 ${this.totalStairsClimbed} 층 도달`;
+
+    this.wrongNotes.push({
+      question: q.title,
+      chosen: q.options[selectedIdx],
+      correct: q.options[q.answer],
+      explanation: q.explanation
+    });
+
+    const modal = document.getElementById('wrong-modal');
+    const desc = document.getElementById('wrong-explanation');
+    const timerBadge = document.getElementById('lock-countdown');
+    modal.style.display = 'flex';
+
+    desc.innerHTML = `
+      <strong>💡 정답: ${q.options[q.answer]}</strong><br>
+      ${q.explanation}
+    `;
+
+    let remain = 7;
+    timerBadge.innerText = `⏱ ${remain}초 동안 학습 후 이동합니다`;
+    const interval = setInterval(() => {
+      remain--;
+      if (remain <= 0) {
+        clearInterval(interval);
+        modal.style.display = 'none';
+        GameApp.currentQIdx++;
+        GameApp.showQuiz();
+      } else {
+        timerBadge.innerText = `⏱ ${remain}초 동안 학습 후 이동합니다`;
+      }
+    }, 1000);
+  },
+
+  triggerBonusGame(durationMs, isBooster) {
+    document.getElementById('quiz-view').classList.remove('active');
+    document.getElementById('game-view').classList.add('active');
+
+    StairsGame.resume();
+    const timerFill = document.getElementById('timer-bar-fill');
+    const banner = document.getElementById('booster-banner');
+
+    if (isBooster) {
+      timerFill.classList.add('booster-active');
+      banner.style.display = 'block';
+    } else {
+      timerFill.classList.remove('booster-active');
+      banner.style.display = 'none';
+    }
+    timerFill.style.width = '100%';
+
+    const startTime = Date.now();
+    clearInterval(this.bonusTimer);
+    this.bonusTimer = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const left = Math.max(0, durationMs - elapsed);
+      const pct = (left / durationMs) * 100;
+      timerFill.style.width = pct + '%';
+
+      if (left <= 0) {
+        clearInterval(this.bonusTimer);
+        banner.style.display = 'none';
+        this.currentQIdx++;
+        this.showQuiz();
+      }
+    }, 30);
+  },
+
+  stepLeft(e) {
+    if (e) e.preventDefault();
+    StairsGame.playerStep('LEFT');
+  },
+
+  stepRight(e) {
+    if (e) e.preventDefault();
+    StairsGame.playerStep('RIGHT');
+  },
+
+  showResult() {
+    document.getElementById('quiz-view').classList.remove('active');
+    document.getElementById('game-view').classList.remove('active');
+    document.getElementById('result-view').classList.add('active');
+
+    document.getElementById('final-stairs-score').innerText = `${this.totalStairsClimbed} 층 정복!`;
+    const correctCount = QuizData.length - this.wrongNotes.length;
+    document.getElementById('final-quiz-rate').innerText = 
+      `퀴즈 결과: ${QuizData.length}문제 중 ${correctCount}문제 정답 (${Math.round((correctCount/QuizData.length)*100)}점)`;
+
+    const notesList = document.getElementById('notes-list');
+    notesList.innerHTML = '';
+
+    if (this.wrongNotes.length === 0) {
+      notesList.innerHTML = `
+        <div class="note-item" style="border-left-color: #51cf66;">
+          <div class="note-q">🏆 25문제 전원 만점! 완전무결한 역사 마스터!</div>
+          <div class="note-exp">구석기, 신석기, 청동기, 고조선의 유물과 생활 모습을 완벽하게 꿰뚫고 있습니다!</div>
+        </div>
+      `;
+    } else {
+      this.wrongNotes.forEach((item) => {
+        const div = document.createElement('div');
+        div.className = 'note-item';
+        div.innerHTML = `
+          <div class="note-q">Q. ${item.question}</div>
+          <div class="note-ans">내가 고른 답: ${item.chosen} ➔ <span style="color:#2b8a3e">정답: ${item.correct}</span></div>
+          <div class="note-exp">${item.explanation}</div>
+        `;
+        notesList.appendChild(div);
+      });
+    }
+  }
+};
+
+/* -------------------------------------------------------------
+ * 5. 무한의 계단 엔진 (재조정된 4단계 고도: 지하 ➔ 지상 ➔ 하늘 ➔ 우주)
+ * ------------------------------------------------------------- */
+const StairsGame = {
+  canvas: null,
+  ctx: null,
+  animId: null,
+  stairs: [],
+  playerIdx: 0,
+  camX: 0,
+  camY: 0,
+  stepW: 68,
+  stepH: 44,
+  jumpOffset: 0,
+  stepEffectCount: 0,
+  blinkTimer: 0,
+
+  initWorld() {
+    this.canvas = document.getElementById('game-canvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.resize();
+
+    this.stairs = [];
+    let curX = 0;
+    let curY = 0;
+    this.stairs.push({ x: curX, y: curY, dir: 'START' });
+
+    let lastDir = 'RIGHT';
+    // 부스터 3회를 감안해 계단을 2200개 넉넉히 생성
+    for (let i = 1; i < 2200; i++) {
+      if (Math.random() < 0.38) {
+        lastDir = (lastDir === 'LEFT') ? 'RIGHT' : 'LEFT';
+      }
+      curX += (lastDir === 'LEFT') ? -this.stepW : this.stepW;
+      curY -= this.stepH;
+      this.stairs.push({ x: curX, y: curY, dir: lastDir });
+    }
+
+    this.playerIdx = 0;
+    this.camX = this.stairs[0].x;
+    this.camY = this.stairs[0].y;
+    this.blinkTimer = 0;
+  },
+
+  resume() {
+    this.resize();
+    this.startLoop();
+  },
+
+  resize() {
+    if (!this.canvas) return;
+    this.canvas.width = this.canvas.parentElement.clientWidth || 400;
+    this.canvas.height = this.canvas.parentElement.clientHeight || 700;
+  },
+
+  startLoop() {
+    cancelAnimationFrame(this.animId);
+    const loop = () => {
+      this.update();
+      this.draw();
+      this.animId = requestAnimationFrame(loop);
+    };
+    this.animId = requestAnimationFrame(loop);
+  },
+
+  stop() {
+    cancelAnimationFrame(this.animId);
+  },
+
+  playerStep(dir) {
+    const nextIdx = this.playerIdx + 1;
+    if (nextIdx >= this.stairs.length) return;
+
+    const nextStair = this.stairs[nextIdx];
+    if (nextStair.dir === dir) {
+      // 점프 성공
+      SoundFX.playJump();
+      this.playerIdx = nextIdx;
+      GameApp.totalStairsClimbed++;
+      this.jumpOffset = 18;
+      this.stepEffectCount = 10;
+      document.getElementById('total-stairs-text').innerText = `👣 ${GameApp.totalStairsClimbed} 층 도달`;
+    } else {
+      // 헛디딤 -> 깜빡이며 3계단 미끄러짐
+      SoundFX.playFall();
+      this.blinkTimer = 24;
+      const dropCount = 3;
+      this.playerIdx = Math.max(0, this.playerIdx - dropCount);
+      GameApp.totalStairsClimbed = Math.max(0, GameApp.totalStairsClimbed - dropCount);
+      this.jumpOffset = -14;
+      document.getElementById('total-stairs-text').innerText = `👣 ${GameApp.totalStairsClimbed} 층 도달`;
+    }
+  },
+
+  update() {
+    const pStair = this.stairs[this.playerIdx];
+    this.camX += (pStair.x - this.camX) * 0.28;
+    this.camY += (pStair.y - this.camY) * 0.28;
+
+    if (this.jumpOffset > 0 || this.jumpOffset < 0) {
+      this.jumpOffset *= 0.72;
+    }
+    if (this.stepEffectCount > 0) this.stepEffectCount--;
+    if (this.blinkTimer > 0) this.blinkTimer--;
+  },
+
+  draw() {
+    const w = this.canvas.width;
+    const h = this.canvas.height;
+    const totalSteps = GameApp.totalStairsClimbed;
+
+    // 🌟 부스터를 반영한 4단계 고도 스케일
+    // 0~120: 지하 / 121~280: 지상 / 281~500: 하늘 / 501~: 우주
+    let altText = "🪨 지하 암벽 동굴 (구석기)";
+    if (totalSteps <= 120) {
+      // [1단계] 지하 암벽 동굴 (0 ~ 120층)
+      const grad = this.ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, "#0e0906");
+      grad.addColorStop(0.5, "#24160c");
+      grad.addColorStop(1, "#3d2412");
+      this.ctx.fillStyle = grad;
+      this.ctx.fillRect(0, 0, w, h);
+      altText = `🪨 지하 암벽 동굴 (${totalSteps * 4}m)`;
+
+      // 동굴 종유석
+      this.ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
+      this.ctx.beginPath();
+      this.ctx.moveTo(20, 0); this.ctx.lineTo(50, 100); this.ctx.lineTo(80, 0);
+      this.ctx.moveTo(w - 90, 0); this.ctx.lineTo(w - 55, 120); this.ctx.lineTo(w - 20, 0);
+      this.ctx.fill();
+    } else if (totalSteps <= 280) {
+      // [2단계] 지상 원시 대평원 (121 ~ 280층)
+      const grad = this.ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, "#69b7ff");
+      grad.addColorStop(0.7, "#e7f5ff");
+      grad.addColorStop(1, "#40c057");
+      this.ctx.fillStyle = grad;
+      this.ctx.fillRect(0, 0, w, h);
+      altText = `🌍 지상 원시 대평원 (${totalSteps * 4}m)`;
+
+      this.ctx.fillStyle = "rgba(43, 138, 62, 0.35)";
+      this.ctx.beginPath();
+      this.ctx.arc(80, h + 80, 160, 0, Math.PI * 2);
+      this.ctx.arc(w - 40, h + 100, 200, 0, Math.PI * 2);
+      this.ctx.fill();
+    } else if (totalSteps <= 500) {
+      // [3단계] 하늘 & 노을 성층권 (281 ~ 500층)
+      const grad = this.ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, "#f76707");
+      grad.addColorStop(0.45, "#ffd43b");
+      grad.addColorStop(1, "#4dabf7");
+      this.ctx.fillStyle = grad;
+      this.ctx.fillRect(0, 0, w, h);
+      altText = `☁️ 하늘 & 노을 성층권 (${totalSteps * 4}m)`;
+
+      this.ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+      this.ctx.beginPath();
+      this.ctx.arc((w * 0.25 - this.camX * 0.15) % w, 140, 45, 0, Math.PI * 2);
+      this.ctx.arc((w * 0.45 - this.camX * 0.15) % w, 130, 60, 0, Math.PI * 2);
+      this.ctx.arc((w * 0.75 - this.camX * 0.12) % w, 250, 50, 0, Math.PI * 2);
+      this.ctx.fill();
+    } else {
+      // [4단계] 신비로운 무한 우주 (501층 이상)
+      const grad = this.ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, "#050409");
+      grad.addColorStop(0.5, "#0f1124");
+      grad.addColorStop(1, "#260b33");
+      this.ctx.fillStyle = grad;
+      this.ctx.fillRect(0, 0, w, h);
+      altText = `🚀 무한 우주 성운 돌파 (${totalSteps * 4}m)`;
+
+      this.ctx.fillStyle = "#ffffff";
+      for (let i = 0; i < 35; i++) {
+        const sx = ((i * 59) - this.camX * 0.04 + w * 2) % w;
+        const sy = ((i * 87) - this.camY * 0.04 + h * 2) % h;
+        this.ctx.fillRect(sx, sy, 2.5, 2.5);
+      }
+    }
+    document.getElementById('altitude-text').innerText = altText;
+
+    // 카메라 락온
+    this.ctx.save();
+    const screenCenterX = w / 2;
+    const screenCenterY = h * 0.68;
+    this.ctx.translate(screenCenterX - this.camX, screenCenterY - this.camY);
+
+    // 계단 그리기
+    const startI = Math.max(0, this.playerIdx - 10);
+    const endI = Math.min(this.stairs.length, this.playerIdx + 20);
+
+    for (let i = startI; i < endI; i++) {
+      const st = this.stairs[i];
+      const isPast = (i <= this.playerIdx);
+      const isNext = (i === this.playerIdx + 1);
+
+      if (isNext) {
+        this.ctx.fillStyle = "rgba(255, 212, 59, 0.4)";
+        this.ctx.beginPath();
+        this.ctx.arc(st.x, st.y + 8, 38, 0, Math.PI * 2);
+        this.ctx.fill();
+      }
+
+      let stairTopColor = isPast ? "#ffc078" : (isNext ? "#ffe066" : "#ffffff");
+      let stairSideColor = isPast ? "#f76707" : "#adb5bd";
+      if (totalSteps <= 120) {
+        stairTopColor = isPast ? "#8d5b3a" : (isNext ? "#d97706" : "#4a3525");
+        stairSideColor = isPast ? "#5c3d26" : "#2d1f14";
+      }
+
+      this.ctx.fillStyle = stairTopColor;
+      this.ctx.strokeStyle = "#343a40";
+      this.ctx.lineWidth = 2.8;
+
+      this.ctx.fillRect(st.x - 30, st.y, 60, 16);
+      this.ctx.strokeRect(st.x - 30, st.y, 60, 16);
+
+      this.ctx.fillStyle = stairSideColor;
+      this.ctx.fillRect(st.x - 30, st.y + 16, 60, 9);
+      this.ctx.strokeRect(st.x - 30, st.y + 16, 60, 9);
+
+      if (i > 0) {
+        this.ctx.fillStyle = (totalSteps <= 120 && !isPast) ? "#fff" : "#495057";
+        this.ctx.font = "bold 11px sans-serif";
+        this.ctx.textAlign = "center";
+        this.ctx.fillText(i + "F", st.x, st.y + 12);
+      }
+    }
+
+    // 플레이어 렌더링
+    const pStair = this.stairs[this.playerIdx];
+    const px = pStair.x;
+    const py = pStair.y - 32 - this.jumpOffset;
+
+    const nextStair = this.stairs[this.playerIdx + 1];
+    if (nextStair) {
+      this.ctx.fillStyle = (totalSteps <= 120) ? "#ffd43b" : "#ff6b4a";
+      this.ctx.font = "bold 15px 'Jua', sans-serif";
+      this.ctx.textAlign = "center";
+      const hintArrow = (nextStair.dir === 'LEFT') ? "◀ LEFT" : "RIGHT ▶";
+      this.ctx.fillText(hintArrow, px, py - 32);
+    }
+
+    if (this.blinkTimer === 0 || Math.floor(this.blinkTimer / 3) % 2 === 0) {
+      this.drawCharacter(px, py);
+    }
+
+    this.ctx.restore();
+  },
+
+  drawCharacter(x, y) {
+    this.ctx.save();
+    this.ctx.translate(x, y);
+
+    // 모자
+    this.ctx.fillStyle = "#ffd43b";
+    this.ctx.beginPath();
+    this.ctx.arc(0, -8, 14, 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.strokeStyle = "#d9480f";
+    this.ctx.lineWidth = 2;
+    this.ctx.stroke();
+
+    // 얼굴
+    this.ctx.fillStyle = (this.blinkTimer > 0) ? "#ffc9c9" : "#ffe8cc";
+    this.ctx.beginPath();
+    this.ctx.arc(0, -4, 9, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    if (this.blinkTimer > 0) {
+      this.ctx.strokeStyle = "#c92a2a";
+      this.ctx.lineWidth = 2;
+      this.ctx.strokeText("x", 1, -4);
+    } else {
+      this.ctx.fillStyle = "#212529";
+      this.ctx.fillRect(2, -6, 2.5, 3.5);
+    }
+
+    // 몸통
+    this.ctx.fillStyle = (this.blinkTimer > 0) ? "#fa5252" : "#ff6b4a";
+    this.ctx.fillRect(-7, 5, 14, 15);
+
+    // 바지
+    this.ctx.fillStyle = "#1971c2";
+    if (this.jumpOffset > 4) {
+      this.ctx.fillRect(-8, 20, 6, 6);
+      this.ctx.fillRect(2, 19, 6, 6);
+    } else {
+      const run = (this.playerIdx % 2 === 0);
+      this.ctx.fillRect(-8, 20, 6, run ? 11 : 7);
+      this.ctx.fillRect(2, 20, 6, run ? 7 : 11);
+    }
+
+    // 발자국 이펙트
+    if (this.stepEffectCount > 0) {
+      this.ctx.fillStyle = "rgba(255, 212, 59, 0.85)";
+      this.ctx.beginPath();
+      this.ctx.arc(-14, 24, 3.5, 0, Math.PI * 2);
+      this.ctx.arc(14, 24, 4, 0, Math.PI * 2);
+      this.ctx.fill();
+    }
+
+    this.ctx.restore();
+  }
+};
+
+/* -------------------------------------------------------------
+ * 6. 조작 키보드 리스너
+ * ------------------------------------------------------------- */
+window.addEventListener('keydown', (e) => {
+  const isGameActive = document.getElementById('game-view').classList.contains('active');
+  if (!isGameActive) return;
+
+  if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+    e.preventDefault();
+    GameApp.stepLeft();
+  } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+    e.preventDefault();
+    GameApp.stepRight();
+  }
+});
+
+window.addEventListener('resize', () => {
+  if (StairsGame.canvas) StairsGame.resize();
+});
+</script>
+</body>
+</html>
